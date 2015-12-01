@@ -19,7 +19,7 @@ For installing fhi-aims plugin for xcrysden, at first install xcrysden , then :
 
 
 BUG report:
-If you see any bug in this plugin you may send your input file and a report about that bug to [ahmadubuntu at gmail dot com]
+If you see any bug in this plugin let me know.
 
 
 Author: Ahmad Abdolmaleki
