@@ -1,0 +1,170 @@
+#! /bin/bash
+
+		#-----------------------------------------------------------------------#
+		#		convert elk.in xsf for visualizing via xcrysden		#
+		#		usage:							#
+		#		chmod +x elk2xsf					#
+		#		./elk2xsf elk.in					#
+		#									#
+		#		Author: Ahmad Abdolmaleki				#
+		#		Email: ahmadubuntu@gmail.com 				#
+		#		website: ahmadubuntu.ir					#
+		#-----------------------------------------------------------------------#
+
+cat $1 | sed -e 's/!.*$//g' -e 's/:.*//' > elk.in.tmp
+
+vorudi=elk.in.tmp
+
+
+# shift the atoms in the unit cell
+shift_x=3.3
+shift_y=3.3
+shift_z=3.4
+
+
+
+#constants
+bohrangstrom=0.52917721092
+
+
+
+#---------------------add-prime-vector to xsf output
+function addcrys (){
+testscale=`cat $vorudi | awk '{print $1}' | grep scale `
+if test "$testscale"
+then
+	sc=`cat $vorudi | awk '{print $1}' | grep -A 1 scale | tail -1 `; #echo $sc
+else
+	sc=1
+fi
+
+lx1=`cat $vorudi | grep -A 1 avec | tail -1 | awk '{print $1}' ` ; 
+ly1=`cat $vorudi | grep -A 1 avec | tail -1 | awk '{print $2}' ` ; 
+lz1=`cat $vorudi | grep -A 1 avec | tail -1 | awk '{print $3}' ` ;
+	lx1=$(echo "scale=8; $lx1*$sc*$bohrangstrom" | bc -l)
+	ly1=$(echo "scale=8; $ly1*$sc*$bohrangstrom" | bc -l)
+	lz1=$(echo "scale=8; $lz1*$sc*$bohrangstrom" | bc -l)
+	ll1=$(echo "scale=8; sqrt(($lx1^2)+($ly1^2)+($lz1^2))" | bc -l) ;
+	
+lx2=`cat $vorudi | grep -A 2 avec | tail -1 | awk '{print $1}' ` ;
+ly2=`cat $vorudi | grep -A 2 avec | tail -1 | awk '{print $2}' ` ;
+lz2=`cat $vorudi | grep -A 2 avec | tail -1 | awk '{print $3}' ` ;
+	lx2=$(echo "scale=8; $lx2*$sc*$bohrangstrom" | bc -l)
+	ly2=$(echo "scale=8; $ly2*$sc*$bohrangstrom" | bc -l)
+	lz2=$(echo "scale=8; $lz2*$sc*$bohrangstrom" | bc -l)
+	ll2=$(echo "scale=8; sqrt(($lx2^2)+($ly2^2)+($lz2^2))" | bc -l) ;
+	
+lx3=`cat $vorudi | grep -A 3 avec | tail -1 | awk '{print $1}' ` ;
+ly3=`cat $vorudi | grep -A 3 avec | tail -1 | awk '{print $2}' ` ;
+lz3=`cat $vorudi | grep -A 3 avec | tail -1 | awk '{print $3}' ` ;
+	lx3=$(echo "scale=8; $lx3*$sc*$bohrangstrom" | bc -l)
+	ly3=$(echo "scale=8; $ly3*$sc*$bohrangstrom" | bc -l)
+	lz3=$(echo "scale=8; $lz3*$sc*$bohrangstrom" | bc -l)
+        ll3=$(echo "scale=8; sqrt(($lx3^2)+($ly3^2)+($lz3^2))" | bc -l) ;
+	
+printf "%13.8f %13.8f %13.8f\n" $lx1 $ly1 $lz1
+printf "%13.8f %13.8f %13.8f\n" $lx2 $ly2 $lz2
+printf "%13.8f %13.8f %13.8f\n" $lx3 $ly3 $lz3
+}
+#---------------------------------------------------------------------
+
+#---------------addatoms from cartesian { molecule }
+function addposcart (){
+nspecies=`cat $vorudi | awk '{print $1}' | grep -A 1 atoms | tail -1 ` ;
+n=0
+for ((i=1;i<=$nspecies;i++))
+do
+	spname=`cat $vorudi | awk '{print $1}' | grep -A $[i+1+n] atoms | tail -1 | awk '{print $1}' | sed "s/'//g; s/.in//g"` ;
+	natoms=`cat $vorudi | awk '{print $1}' | grep -A $[i+2+n] atoms | tail -1 | awk '{print $1}' ` ;
+	for ((j=1;j<=$natoms;j++))	
+	do
+		xa_bohr=`cat $vorudi | grep -A $[i+j+n+2] atoms | tail -1 | awk '{print $1}' `
+		ya_bohr=`cat $vorudi | grep -A $[i+j+n+2] atoms | tail -1 | awk '{print $2}' `
+		za_bohr=`cat $vorudi | grep -A $[i+j+n+2] atoms | tail -1 | awk '{print $3}' `
+		
+		p_a=$(echo "scale=8; $xa_bohr*$bohrangstrom+$shift_x" | bc -l)
+		p_b=$(echo "scale=8; $ya_bohr*$bohrangstrom+$shift_y" | bc -l)
+		p_c=$(echo "scale=8; $za_bohr*$bohrangstrom+$shift_z" | bc -l)
+		printf "%s %13.8f %13.8f %13.8f\n" $spname $p_a $p_b $p_c
+		
+		
+			
+	done
+	n=$[n+nspecies+natoms-1]
+done
+}
+#--------------------------------------------------------------------
+
+#---------------addatoms from lattice fraction { crystal }
+function addposl (){
+nspecies=`cat $vorudi | awk '{print $1}' | grep -A 1 atoms | tail -1 ` ; 
+n=0
+for ((i=1;i<=$nspecies;i++))
+do
+	spname=`cat $vorudi | awk '{print $1}' | grep -A $[i+1+n] atoms | tail -1 | awk '{print $1}' | sed "s/'//g; s/.in//g"` ;
+	natoms=`cat $vorudi | awk '{print $1}' | grep -A $[i+2+n] atoms | tail -1 | awk '{print $1}' ` ;
+
+	for ((j=1; j<=$natoms ;j++))	
+	do
+		xa_bohr=`cat $vorudi | grep -A $[i+j+n+2] atoms | tail -1 | awk '{print $1}' `
+		ya_bohr=`cat $vorudi | grep -A $[i+j+n+2] atoms | tail -1 | awk '{print $2}' `
+		za_bohr=`cat $vorudi | grep -A $[i+j+n+2] atoms | tail -1 | awk '{print $3}' `
+		
+		p_a=$(echo "scale=8; (($xa_bohr*$lx1+$ya_bohr*$lx2+$za_bohr*$lx3))+$shift_x" | bc -l)
+		p_b=$(echo "scale=8; (($xa_bohr*$ly1+$ya_bohr*$ly2+$za_bohr*$ly3))+$shift_y" | bc -l)
+		p_c=$(echo "scale=8; (($xa_bohr*$lz1+$ya_bohr*$lz2+$za_bohr*$lz3))+$shift_z" | bc -l)
+		printf "%s %13.8f %13.8f %13.8f\n" $spname $p_a $p_b $p_c
+	done
+	n=$[n+nspecies+natoms-1]
+done
+}
+#--------------------------------------------------------------------
+
+
+
+
+
+#################################################################################################################
+#					begin main program							#
+#################################################################################################################
+echo " CRYSTAL" 
+echo " PRIMVEC"
+addcrys
+echo " PRIMCOORD"
+
+
+# finding total number of atoms
+ntotatom=0
+nspecies=`cat $vorudi | awk '{print $1}' | grep -A 1 atoms | tail -1 ` ;
+n=0
+for ((i=1 ; i<=$nspecies ; i++))
+do
+	natoms=`cat $vorudi | awk '{print $1}' | grep -A $[i+2+n] atoms | tail -1 | awk '{print $1}' ` ;
+	n=$[n+nspecies+natoms-1]
+	ntotatom=$[ntotatom+natoms]
+done
+
+echo " "$ntotatom" 1"
+
+
+# checking if input is molecule or not
+testmolecule=`cat $vorudi | awk '{print $1}' | grep molecule` ;
+if test "$testmolecule"
+then
+	testmt=`cat $vorudi | awk '{print $1}' | grep -A 1 molecule | tail -1` ;
+	case $testmt in
+		".true.") 
+				atomic_style="cartesian" ;
+				addposcart;;
+		*) 
+				atomic_style="inlatticecoordinade" ;
+				addposl;;
+	esac
+else
+	addposl
+fi
+
+
+
+# removing tmporary input file
+rm -f elk.in.tmp
