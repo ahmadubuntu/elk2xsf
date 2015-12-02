@@ -17,9 +17,9 @@ vorudi=elk.in.tmp
 
 
 # shift the atoms in the unit cell
-shift_x=3.3
-shift_y=3.3
-shift_z=3.4
+shift_x=0
+shift_y=0
+shift_z=0
 
 
 
