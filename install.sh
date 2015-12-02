@@ -17,7 +17,7 @@ EOF
 
 cat > shelk2xsf.sh << EOF
 #! /bin/bash
-${PWD}/elk2xsf $1
+${PWD}/elk2xsf \$1
 EOF
 
 chmod +x shelk2xsf.sh
