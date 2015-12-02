@@ -2,7 +2,7 @@
 visualizing elk.in (input file for elk, a dft code) via xcrysden
 
 version:
-1.0.0
+1.0.1
 
 
 Install guide:
