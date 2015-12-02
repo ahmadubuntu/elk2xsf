@@ -23,7 +23,7 @@ If you see any bug in this plugin let me know.
 
 
 Author: Ahmad Abdolmaleki
-website: ahmadubuntu.ir
+website: http://ahmadubuntu.ir
 researchgate: https://www.researchgate.net/profile/Ahmad_Abdolmaleki
 
 
